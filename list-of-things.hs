@@ -13,25 +13,35 @@ main = do
 listItem :: String -> UI Element
 listItem s = mkElement "li" # set text s
 
-timesClicked elem = accumB (0::Int) ((+1) <$ UI.click elem)
+timesClicked :: Element -> UI (Behavior Int)
+timesClicked elem = accumB 0 ((+1) <$ UI.click elem)
 
-stringsGiven button input = accumB [] ((++ ["Clicked"]) <$ UI.click button)
+stringsGiven :: Element -> t -> UI (Behavior [String])
+stringsGiven button input = accumB [] ((++ [" has clicked"]) <$ UI.click button)
 
+
+submitEvents :: Element -> Element -> UI (Event String)
+submitEvents button input = do val <- get value input
+                               return $ val <$ (UI.click button)
 
 setup :: Window -> UI ()
 setup rootWindow = void $ do
   userNameInput <- UI.input # set (attr "placeholder") "User name"
   loginButton <- UI.button #+ [ string "Clickity!" ]
   outputClicks <- UI.p
+  nameSpew <- UI.p
+  currNameElem <- UI.p
   nameList <- UI.ul
   getBody rootWindow #+
-    map element [ userNameInput, loginButton, outputClicks] --, nameList ]
+    map element [ userNameInput, loginButton, outputClicks , nameSpew, currNameElem ]
 
 
   clicks <- timesClicked loginButton
-  -- names <- stringsGiven loginButton userNameInput
-  -- sink :: ReadWriteAttr x i o -> Behavior i -> UI x -> UI x
   element outputClicks # sink text (show <$> clicks)
-  -- nameList <- (fmap (listItem) <$> names)
-  -- element nameList # sink children nameList
 
+  names <- stringsGiven loginButton userNameInput
+  element nameSpew # sink text (unlines <$> names)
+
+  nameE <- submitEvents loginButton userNameInput
+  currName <- stepper "Ash" nameE
+  element currNameElem # sink text currName
