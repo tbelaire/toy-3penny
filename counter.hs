@@ -17,7 +17,7 @@ setup rootWindow = void $ do
   button <- UI.button #+ [ string "Clickity!" ]
   outputClicks <- UI.p
   getBody rootWindow #+
-    map element [ button, outputClicks] --, nameList ]
+    map element [ button, outputClicks]
 
 
   clicks <- timesClicked button
