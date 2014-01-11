@@ -25,13 +25,13 @@ setup rootWindow = void $ do
   outputClicks <- UI.p
   nameList <- UI.ul
   getBody rootWindow #+
-    map element [ userNameInput, loginButton, outputClicks, nameList ]
+    map element [ userNameInput, loginButton, outputClicks] --, nameList ]
 
 
   clicks <- timesClicked loginButton
-  names <- stringsGiven loginButton userNameInput
+  -- names <- stringsGiven loginButton userNameInput
   -- sink :: ReadWriteAttr x i o -> Behavior i -> UI x -> UI x
   element outputClicks # sink text (show <$> clicks)
-  nameList <- (fmap (listItem) <$> names)
-  element nameList # sink children nameList
+  -- nameList <- (fmap (listItem) <$> names)
+  -- element nameList # sink children nameList
 
