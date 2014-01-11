@@ -10,6 +10,7 @@ main :: IO ()
 main = do
   startGUI defaultConfig setup
 
+timesClicked :: Element -> UI (Behavior Int)
 timesClicked elem = accumB (0::Int) ((+1) <$ UI.click elem)
 
 setup :: Window -> UI ()
