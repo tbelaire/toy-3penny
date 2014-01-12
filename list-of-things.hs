@@ -1,4 +1,4 @@
-
+import Data.List (intersperse)
 import Control.Monad (void)
 
 import Reactive.Threepenny
@@ -16,32 +16,31 @@ listItem s = mkElement "li" # set text s
 timesClicked :: Element -> UI (Behavior Int)
 timesClicked elem = accumB 0 ((+1) <$ UI.click elem)
 
-stringsGiven :: Element -> t -> UI (Behavior [String])
-stringsGiven button input = accumB [] ((++ [" has clicked"]) <$ UI.click button)
-
-
 submitEvents :: Element -> Element -> UI (Event String)
-submitEvents button input = do val <- get value input
-                               return $ val <$ (UI.click button)
+submitEvents button input = do currVal <- stepper "" $ UI.valueChange input
+                               return $ currVal <@ (UI.click button)
 
 setup :: Window -> UI ()
 setup rootWindow = void $ do
   userNameInput <- UI.input # set (attr "placeholder") "User name"
   loginButton <- UI.button #+ [ string "Clickity!" ]
   outputClicks <- UI.p
-  nameSpew <- UI.p
   currNameElem <- UI.p
-  nameList <- UI.ul
+  nameListElem <- UI.p
   getBody rootWindow #+
-    map element [ userNameInput, loginButton, outputClicks , nameSpew, currNameElem ]
+    map element [ userNameInput, loginButton, outputClicks,
+    nameListElem, currNameElem ]
 
 
   clicks <- timesClicked loginButton
   element outputClicks # sink text (show <$> clicks)
 
-  names <- stringsGiven loginButton userNameInput
-  element nameSpew # sink text (unlines <$> names)
-
   nameE <- submitEvents loginButton userNameInput
-  currName <- stepper "Ash" nameE
-  element currNameElem # sink text currName
+  currNameB <- stepper "" nameE
+  element currNameElem # sink text currNameB
+ 
+  -- names :: Behavior [String]
+  namesB <- accumB [] ((\name lst-> lst ++ [name]) <$> nameE)
+  element nameListElem # sink text (concat  <$> namesB)
+
+  return ()
